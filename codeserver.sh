@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# install nano text editor
+sudo apt install nano
+
 # Install code-server
 curl -fsSL https://code-server.dev/install.sh | sh
 
