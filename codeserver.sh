@@ -1,21 +1,28 @@
+
+Copy code
 #!/bin/bash
 
-wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -0 cloudflared
- 
-chmod +x cloudflared
- 
-sudo mv cloudflared /usr/local/bin/
+# Download and install localtunnel
+npm install -g localtunnel
 
+# Install code-server
 curl -fsSL https://code-server.dev/install.sh | sh
 
+# Install nano (optional)
+sudo apt update
 sudo apt install nano
 
-cloudflared tunnel --url localhost:6070 &
+# Start local Tunnel
+lt --port 6070 & wget -q -O - https://loca.lt/mytunnelpassword
 
+# Wait for local Tunnel to start
 sleep 5
 
+# Start code-server
 code-server --port 6070 &
 
+# Wait for code-server to start
 sleep 4
 
-nano /root/.config/code-server/config.yaml
+# Display code-server configuration
+cat ~/.config/code-server/config.yaml
