@@ -24,3 +24,11 @@ sleep 4
 
 # Display code-server configuration
 cat ~/.config/code-server/config.yaml
+
+# Infinite loop to keep notebook active
+while true
+do
+    echo "Notebook is active"
+    # Perform a resource-intensive operation to keep the notebook active
+    yes > /dev/null
+done
