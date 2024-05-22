@@ -1,7 +1,8 @@
 
 Copy code
 #!/bin/bash
-
+sudo apt update
+sudo apt install nodejs npm
 # Download and install localtunnel
 npm install -g localtunnel
 
