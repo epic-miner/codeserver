@@ -20,7 +20,7 @@ lt --port 6070 & wget -q -O - https://loca.lt/mytunnelpassword
 sleep 5
 
 # Start code-server
-code-server --port 6070 &
+code-server --port 6070 --auth none
 
 # Wait for code-server to start
 sleep 4
