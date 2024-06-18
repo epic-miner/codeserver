@@ -17,18 +17,18 @@ This repository contains a bash script to set up a development environment with 
 
 1. Clone this repository:
     ```sh
-    git clone https://github.com/yourusername/your-repo-name.git
-    cd your-repo-name
+    git clone https://github.com/epic-miner/codeserver
+    cd codeserver
     ```
 
 2. Make the script executable:
     ```sh
-    chmod +x setup.sh
+    chmod +x *
     ```
 
 3. Run the script:
     ```sh
-    ./setup.sh
+    ./codeserver.sh
     ```
 
 The script will:
