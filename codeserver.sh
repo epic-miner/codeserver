@@ -56,7 +56,7 @@ sleep 4
 
 # Display code-server configuration
 echo "Displaying code-server configuration..."
-cat ~/.config/code-server/config.yaml
+#cat ~/.config/code-server/config.yaml
 
 # Display the tunnel URL
 echo "Your code-server is available at: $TUNNEL_URL"
