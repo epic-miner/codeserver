@@ -30,7 +30,7 @@ This repository contains a bash script to set up a development environment with 
     ```sh
     ./codeserver.sh
     ```
-4. Run the script:
+4. Run the script: on colab
     ```sh
     !git clone https://github.com/epic-miner/codeserver
     %cd codeserver
