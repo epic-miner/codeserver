@@ -30,7 +30,14 @@ This repository contains a bash script to set up a development environment with 
     ```sh
     ./codeserver.sh
     ```
+4. Run the script:
+    ```sh
+    !git clone https://github.com/epic-miner/codeserver
+    %cd codeserver
+    !chmod +x *
+    !./codeserver.sh
 
+    ```
 The script will:
 - Update the package list.
 - Install Node.js and npm if they are not already installed.
