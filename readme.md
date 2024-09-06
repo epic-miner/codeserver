@@ -30,15 +30,17 @@ This repository contains a bash script to set up a development environment with 
     ```sh
     ./codeserver.sh
     ```
-4. Run the script: on colab
-    ```sh
+## Colab
+ Run the script: on colab
+
+ ```sh
     !git clone https://github.com/epic-miner/codeserver
     %cd codeserver
     !chmod +x *
     !./codeserver.sh
 
-    ```
-The script will:
+  ```
+##  The script will:
 - Update the package list.
 - Install Node.js and npm if they are not already installed.
 - Install localtunnel globally using npm if it is not already installed.
