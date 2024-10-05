@@ -1,66 +1,93 @@
 #!/bin/bash
 
-# Function to check if a command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
+# Check if running as root
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 
+   exit 1
+fi
+
+# Function to install Code Server
+install_code_server() {
+    echo "Installing Code Server..."
+    
+    # Download and install Code Server
+    curl -fsSL https://code-server.dev/install.sh | sh
+
+    # Create a systemd service file to run code-server
+    CODE_SERVER_SERVICE="/etc/systemd/system/code-server.service"
+    
+    echo "Creating systemd service for Code Server..."
+    cat <<EOL > $CODE_SERVER_SERVICE
+[Unit]
+Description=Code Server
+
+[Service]
+Type=simple
+User=$SUDO_USER
+ExecStart=/usr/bin/code-server --auth none --port 6070
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+    # Enable and start the Code Server service
+    echo "Enabling and starting Code Server service..."
+    systemctl enable code-server
+    systemctl start code-server
+    echo "Code Server installed and running on port 6070 without authentication."
 }
 
-# Update package list
-sudo apt update
+# Function to install Tor if not installed
+install_tor() {
+    echo "Checking if Tor is installed..."
+    if ! command -v tor >/dev/null 2>&1; then
+        echo "Tor not found. Installing Tor..."
+        apt update
+        apt install tor -y
+        echo "Tor installed successfully."
+    else
+        echo "Tor is already installed."
+    fi
+}
 
-# Check if Node.js is installed
-if ! command_exists node; then
-    echo "Installing Node.js and npm..."
-    sudo apt install -y nodejs npm
-else
-    echo "Node.js and npm are already installed."
-fi
+# Function to configure Tor for port forwarding
+configure_tor() {
+    echo "Configuring Tor for port forwarding..."
+    
+    # Backup torrc if not already backed up
+    if [ ! -f /etc/tor/torrc.backup ]; then
+        echo "Backing up /etc/tor/torrc to /etc/tor/torrc.backup"
+        cp /etc/tor/torrc /etc/tor/torrc.backup
+    fi
+    
+    # Hidden Service configuration
+    HIDDEN_SERVICE_DIR="/var/lib/tor/hidden_service"
+    PORT_TO_FORWARD=6070
+    read -p "Enter the port to forward (default $PORT_TO_FORWARD): " input_port
+    PORT_TO_FORWARD=${input_port:-$PORT_TO_FORWARD}
 
-# Check if code-server is installed
-if ! command_exists code-server; then
-    echo "Installing code-server..."
-    curl -fsSL https://code-server.dev/install.sh | sh
-else
-    echo "code-server is already installed."
-fi
+    echo "HiddenServiceDir $HIDDEN_SERVICE_DIR" >> /etc/tor/torrc
+    echo "HiddenServicePort 80 127.0.0.1:$PORT_TO_FORWARD" >> /etc/tor/torrc
 
-# Check if nano is installed (optional)
-if ! command_exists nano; then
-    echo "Installing nano..."
-    sudo apt install -y nano
-else
-    echo "nano is already installed."
-fi
+    # Restart Tor
+    echo "Restarting Tor service to apply changes..."
+    service tor restart
+}
 
-# Install and set up ngrok
-if ! command_exists ngrok; then
-    echo "Downloading and installing ngrok..."
-    wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
-    tar -xvf ngrok-v3-stable-linux-amd64.tgz
-    sudo mv ngrok /usr/local/bin/
-fi
+# Function to display the .onion address
+display_onion_address() {
+    echo "Fetching the .onion address..."
+    if [ -f /var/lib/tor/hidden_service/hostname ]; then
+        ONION_ADDRESS=$(cat /var/lib/tor/hidden_service/hostname)
+        echo "Your hidden service is available at: $ONION_ADDRESS"
+    else
+        echo "Error: Could not find the .onion address. Make sure the hidden service is set up correctly."
+    fi
+}
 
-# Authenticate ngrok
-echo "Authenticating ngrok..."
-ngrok authtoken 2dVYRMCgTJgYBiE2NVivf2hJ0Ec_3dbwCA2pvqMkmQ5kZSs71
-
-# Start ngrok on port 6070
-echo "Starting ngrok..."
-ngrok http 6070 & NGROK_PID=$!
-
-# Wait for ngrok to start
-sleep 5
-
-# Start code-server on port 6070 with no authentication
-echo "Starting code-server..."
-code-server --port 6070 --auth none &
-CODE_SERVER_PID=$!
-sleep 4
-
-# Display the ngrok URL
-echo "Your ngrok URL is:"
-curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
-
-# Optionally, display code-server configuration
-# echo "Displaying code-server configuration..."
-# cat ~/.config/code-server/config.yaml
+# Main script execution
+install_code_server
+install_tor
+configure_tor
+display_onion_address
