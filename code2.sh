@@ -12,30 +12,7 @@ install_code_server() {
     
     # Download and install Code Server
     curl -fsSL https://code-server.dev/install.sh | sh
-
-    # Create a systemd service file to run code-server
-    CODE_SERVER_SERVICE="/etc/systemd/system/code-server.service"
-    
-    echo "Creating systemd service for Code Server..."
-    cat <<EOL > $CODE_SERVER_SERVICE
-[Unit]
-Description=Code Server
-
-[Service]
-Type=simple
-User=$SUDO_USER
-ExecStart=/usr/bin/code-server --auth none --port 6070
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-    # Enable and start the Code Server service
-    echo "Enabling and starting Code Server service..."
-    systemctl enable code-server
-    systemctl start code-server
-    echo "Code Server installed and running on port 6070 without authentication."
+    echo "Code Server installed successfully."
 }
 
 # Function to install Tor if not installed
@@ -88,6 +65,14 @@ display_onion_address() {
 
 # Main script execution
 install_code_server
+# Start Code Server without authentication
+echo "Starting Code Server on port 6070 without authentication..."
+code-server --port 6070 --auth none &
+
+# Wait for a moment to ensure Code Server is up and running
+sleep 5
+
 install_tor
+# Proceed with Tor configuration
 configure_tor
 display_onion_address
